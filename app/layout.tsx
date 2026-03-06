@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "EFP Atlas",
   description: "Explore Ethereum accounts as an interactive space atlas powered by EFP",
+  metadataBase: new URL("https://efp-atlas.vercel.app"),
   icons: {
     icon: [
       { url: "/favicon.ico" },

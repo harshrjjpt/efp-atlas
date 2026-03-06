@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { fetchPlanetProfile } from "@/lib/planet-profile";
+import { resolveServerSiteOrigin } from "@/lib/site-url";
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
 
@@ -15,9 +16,10 @@ export async function generateMetadata({ params }: { params: { address: string }
   const title = `${label} | EFP Atlas Planet`;
   const description = `Explore ${label} in EFP Atlas with live social graph stats.`;
   const h = headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
-  const origin = `${proto}://${host}`;
+  const origin = resolveServerSiteOrigin({
+    host: h.get("x-forwarded-host") ?? h.get("host"),
+    forwardedProto: h.get("x-forwarded-proto"),
+  });
   const pageUrl = `${origin}/planet/${address}`;
   const imageUrl = `${origin}/planet/${address}/opengraph-image`;
 

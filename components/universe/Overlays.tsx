@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { resolveClientSiteOrigin } from "@/lib/site-url";
 import { COLORS, FAMOUS_PLANETS, TILE_PAL, WORLD_SIZE } from "./constants";
 import { clamp } from "./math";
 import type { Planet, Tile, WarpPhase } from "./types";
@@ -170,10 +171,10 @@ export function ShareModal({ planet, onClose }: { planet: Planet; onClose: () =>
   const famous = planet.extras.famousKey ? FAMOUS_PLANETS[planet.extras.famousKey] : null;
   const rankLabel = account.rank <= 10 ? "👑 Legend" : account.rank <= 100 ? "🐋 Whale" : account.rank <= 1000 ? "🦈 Shark" : "🐟 Citizen";
   const planetPath = `/planet/${account.address.toLowerCase()}`;
-  const planetUrl = typeof window !== "undefined" ? `${window.location.origin}${planetPath}` : planetPath;
+  const planetUrl = `${resolveClientSiteOrigin()}${planetPath}`;
 
   const onTwitterShare = () => {
-    const liveUrl = `${window.location.origin}${planetPath}`;
+    const liveUrl = `${resolveClientSiteOrigin()}${planetPath}`;
     const tweetRawText = `My EFP Planet 🌍
 
 ${name}
