@@ -14,7 +14,7 @@ Most leaderboard views are list-first and static. This project turns EFP data in
 - Discovery feels exploratory instead of tabular
 - Visual traits (size, rings, moons, atmosphere) encode account signals
 
-## Product Highlights
+## Highlights
 
 - Infinite sector exploration with drag + keyboard controls
 - Cursor-centered zoom with smooth inertia
@@ -49,7 +49,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [https://efp-atlas.vercel.app/](https://efp-atlas.vercel.app/).
 
 ### 3. Build (production)
 
