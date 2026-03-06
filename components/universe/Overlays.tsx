@@ -163,12 +163,31 @@ export function WarpOverlay({ phase, targetName }: { phase: WarpPhase; targetNam
 }
 
 export function ShareModal({ planet, onClose }: { planet: Planet; onClose: () => void }) {
+  const [shareHint, setShareHint] = useState<string | null>(null);
   const account = planet.account;
   const name = account.name ?? `${account.address.slice(0, 6)}…${account.address.slice(-4)}`;
   const c = planet.extras.famousKey ? FAMOUS_PLANETS[planet.extras.famousKey].colorOverride : COLORS[planet.type];
   const famous = planet.extras.famousKey ? FAMOUS_PLANETS[planet.extras.famousKey] : null;
   const rankLabel = account.rank <= 10 ? "👑 Legend" : account.rank <= 100 ? "🐋 Whale" : account.rank <= 1000 ? "🦈 Shark" : "🐟 Citizen";
-  const tweetText = encodeURIComponent(`My EFP Planet 🌍\n\n${name}\nRank: #${account.rank} ${rankLabel}\nFollowers: ${account.followers.toLocaleString()}\nMoons: ${planet.extras.moonCount} 🌙\nDeFi Rings: ${planet.extras.defiActivity} 💍\n\nExplore EFP Atlas 🚀\nhttps://efp.app`);
+  const planetPath = `/planet/${account.address.toLowerCase()}`;
+  const planetUrl = typeof window !== "undefined" ? `${window.location.origin}${planetPath}` : planetPath;
+
+  const onTwitterShare = () => {
+    const liveUrl = `${window.location.origin}${planetPath}`;
+    const tweetRawText = `My EFP Planet 🌍
+
+${name}
+Rank: #${account.rank} ${rankLabel}
+Followers: ${account.followers.toLocaleString()}
+Moons: ${planet.extras.moonCount} 🌙
+DeFi Rings: ${planet.extras.defiActivity} 💍
+
+Explore EFP Atlas 🚀
+${liveUrl}`;
+    const tweetText = encodeURIComponent(tweetRawText);
+    setShareHint("Tweet includes a planet URL with a dynamic preview image (Twitter card).");
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={onClose}>
@@ -222,16 +241,22 @@ export function ShareModal({ planet, onClose }: { planet: Planet; onClose: () =>
         </div>
 
         <div style={{ padding: "0 24px 24px", display: "flex", gap: 10 }}>
-          <a href={`https://twitter.com/intent/tweet?text=${tweetText}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", padding: "11px", background: "rgba(29,161,242,0.15)", border: "1px solid rgba(29,161,242,0.4)", borderRadius: 12, color: "#60a5fa", fontFamily: "monospace", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+          <button onClick={onTwitterShare} style={{ flex: 1, textAlign: "center", padding: "11px", background: "rgba(29,161,242,0.15)", border: "1px solid rgba(29,161,242,0.4)", borderRadius: 12, color: "#60a5fa", fontFamily: "monospace", fontSize: 12, fontWeight: 700, textDecoration: "none", cursor: "pointer" }}>
             𝕏 Twitter
-          </a>
-          <a href={`https://warpcast.com/~/compose?text=${tweetText}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", padding: "11px", background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 12, color: "#c4b5fd", fontFamily: "monospace", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+          </button>
+          <a href={`https://warpcast.com/~/compose?text=${encodeURIComponent(`My EFP Planet 🌍\n\n${name}\nRank: #${account.rank} ${rankLabel}\nFollowers: ${account.followers.toLocaleString()}\nMoons: ${planet.extras.moonCount} 🌙\nDeFi Rings: ${planet.extras.defiActivity} 💍\n\nExplore EFP Atlas 🚀\n${planetUrl}`)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", padding: "11px", background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 12, color: "#c4b5fd", fontFamily: "monospace", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
             🟣 Farcaster
           </a>
-          <button onClick={() => navigator.clipboard?.writeText(`My EFP Planet: ${name} | Rank #${account.rank} | Followers: ${account.followers} | Moons: ${planet.extras.moonCount} | https://efp.app`)} style={{ padding: "11px 14px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "rgba(255,255,255,0.6)", fontFamily: "monospace", fontSize: 11, cursor: "pointer" }}>
+          <button onClick={() => navigator.clipboard?.writeText(`My EFP Planet: ${name} | Rank #${account.rank} | Followers: ${account.followers} | Moons: ${planet.extras.moonCount} | ${planetUrl}`)} style={{ padding: "11px 14px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "rgba(255,255,255,0.6)", fontFamily: "monospace", fontSize: 11, cursor: "pointer" }}>
             📋
           </button>
         </div>
+
+        {shareHint && (
+          <div style={{ margin: "0 24px 16px", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(96,165,250,0.35)", background: "rgba(59,130,246,0.09)", color: "rgba(191,219,254,0.95)", fontFamily: "monospace", fontSize: 10 }}>
+            {shareHint}
+          </div>
+        )}
 
         <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", width: 28, height: 28, color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 14 }}>
           ✕
