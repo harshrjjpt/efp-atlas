@@ -76,6 +76,8 @@ export default function BubbleUniverse({ initialLimit }: Props) {
   const loadQueue = useRef<Array<{ key: string; page: number }>>([]);
   const balanceCacheRef = useRef<Map<string, number>>(new Map());
   const balancePendingRef = useRef<Set<string>>(new Set());
+  const nftCountCacheRef = useRef<Map<string, number>>(new Map());
+  const nftPendingRef = useRef<Set<string>>(new Set());
 
   const [dims, setDims] = useState({ w: 1280, h: 800 });
   const [camera, setCamera] = useState({ x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 });
@@ -314,6 +316,41 @@ export default function BubbleUniverse({ initialLimit }: Props) {
               })
               .catch(() => {})
               .finally(() => chunk.forEach((addr) => balancePendingRef.current.delete(addr)));
+          }
+
+          const nftUncached = tile.planets
+            .map((p) => p.account.address.toLowerCase())
+            .filter((addr) => !nftCountCacheRef.current.has(addr) && !nftPendingRef.current.has(addr));
+
+          if (nftUncached.length > 0) {
+            const chunk = nftUncached.slice(0, 60);
+            chunk.forEach((addr) => nftPendingRef.current.add(addr));
+            fetch("/api/eth/nft-counts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ addresses: chunk }),
+            })
+              .then((res) => (res.ok ? res.json() : Promise.reject()))
+              .then((payload) => {
+                const counts = payload?.counts ?? {};
+                for (const [addrRaw, countRaw] of Object.entries(counts as Record<string, number>)) {
+                  const normalized = addrRaw.toLowerCase();
+                  const count = Number.isFinite(countRaw) ? Math.max(0, Math.floor(Number(countRaw))) : 0;
+                  nftCountCacheRef.current.set(normalized, count);
+                }
+
+                Array.from(tileMapRef.current.values()).forEach((t) =>
+                  t.planets.forEach((p) => {
+                    const count = nftCountCacheRef.current.get(p.account.address.toLowerCase());
+                    if (count == null) return;
+                    p.extras.nftCount = count;
+                    p.extras.moonCount = count;
+                  }),
+                );
+                setTiles(Array.from(tileMapRef.current.values()));
+              })
+              .catch(() => {})
+              .finally(() => chunk.forEach((addr) => nftPendingRef.current.delete(addr)));
           }
 
           setTiles(Array.from(tileMapRef.current.values()));

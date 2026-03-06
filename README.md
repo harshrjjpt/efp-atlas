@@ -20,6 +20,7 @@ Most leaderboard views are list-first and static. This project turns EFP data in
 - Cursor-centered zoom with smooth inertia
 - Progressive loading of EFP leaderboard pages
 - Planet-level visual encoding of account activity
+- Moon count based on real wallet NFT holdings
 - Warp search (jump to known wallets quickly)
 - Travel mode with rocket steering
 - Account details panel + external links
@@ -63,12 +64,17 @@ npm run start
 2. Each sector maps to one EFP leaderboard page.
 3. Accounts are transformed into `Planet` domain objects.
 4. ETH balances are fetched in batches and radius is recomputed.
-5. Scene is rendered from viewport-filtered planets.
+5. NFT holding counts are fetched and synced to moon counts.
+6. Scene is rendered from viewport-filtered planets.
 
 ## API Endpoints
 
 - `GET /api/efp/leaderboard?page=<n>&limit=<m>`
 - `POST /api/eth/balances` with `{ "addresses": string[] }`
+- `POST /api/eth/nft-counts` with `{ "addresses": string[] }`
+
+Optional env var:
+- `COVALENT_API_KEY` (defaults to public `ckey_docs`)
 
 ## Controls
 
